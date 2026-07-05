@@ -10,6 +10,7 @@ public class PlayerCamera : MonoBehaviour
     [Header("Sensitivity")]
     public float mouseSensitivity = 100f;
     [Header("Camera Smoothing")]
+    [SerializeField] private bool cameraSmoothing = true;
     public float smoothTime = 0.05f; // Czas wygładzania (niższa = szybsza reakcja)
     private Vector2 currentMouseDelta;
     private Vector2 mouseDeltaVelocity;
@@ -68,20 +69,32 @@ public class PlayerCamera : MonoBehaviour
         playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, targetFov, Time.deltaTime * 5f);
     }
 
+    private void FixedUpdate()
+    {
+        
+    }
+
     void LookAround()
     {
         Vector2 targetMouseDelta = new Vector2(
-            Input.GetAxis("Mouse X"),
-            Input.GetAxis("Mouse Y")
-        ) * mouseSensitivity * Time.deltaTime;
+            Input.GetAxisRaw("Mouse X"),
+            Input.GetAxisRaw("Mouse Y")
+        ) * mouseSensitivity;
 
-        // SmoothDamp do płynnego przejścia
-        currentMouseDelta = Vector2.SmoothDamp(
-            currentMouseDelta,
-            targetMouseDelta,
-            ref mouseDeltaVelocity,
-            smoothTime
-        );
+        if (cameraSmoothing)
+        {
+            currentMouseDelta = Vector2.SmoothDamp(
+                currentMouseDelta,
+                targetMouseDelta,
+                ref mouseDeltaVelocity,
+                smoothTime
+            );
+        }
+        else
+        {
+            currentMouseDelta = targetMouseDelta;
+            mouseDeltaVelocity = Vector2.zero;
+        }
 
         xRotation -= currentMouseDelta.y;
         xRotation = Mathf.Clamp(xRotation, -80f, 80f);
